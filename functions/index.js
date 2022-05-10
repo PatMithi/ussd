@@ -1,25 +1,35 @@
 const functions = require("firebase-functions");
+
 const express = require('express');
+
 const bodyParser = require('body-parser');
+
 const firebase = require('firebase/app');
+
 const firebaseAuthentication = require('firebase/auth');
+
 const { Firestore, getFirestore } = require("@firebase/firestore");
+
 const admin = require('firebase-admin');
+
 const { response } = require("express");
+
 require('firebase/firestore');
 
 const appUssd = express();
+
 appUssd.use(bodyParser.json());
 appUssd.use(bodyParser.urlencoded({ extended: false }));
 
 const regUssd = express();
+
 regUssd.use(bodyParser.json());
 regUssd.use(bodyParser.urlencoded({extended: false}));
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAIEL3ibfhqZo-hFMimqh7yA6nd08ysJoA",
@@ -43,7 +53,7 @@ const auth = firebaseAuthentication.getAuth();
 appInit();
 function appInit() {
     appUssd.post('/ussd', (req, res) => {
-    // Read the variables sent via POST from our API
+    // Read the variables sent via POST from Africa's Talking API
     const {
         sessionId,
         serviceCode,
@@ -53,11 +63,10 @@ function appInit() {
     } = req.body;
 
     let response = '';
-    let account = '';
     let level = 0;
 
     if (text == '') {
-        // This is the first request. Note how we start the response with CON
+        // This is the first request. First code starts with CON
         response = `CON What would you like to do?
         1. Register Account
         2. Login to Msika Ya Alimi
@@ -68,75 +77,101 @@ function appInit() {
         textArray = text.split('*');
         level = textArray.length;
         if (textArray[0] == 1){
+
             /**
              * Code to load the registraion menu 
              * once a user has chosen option 1
              */
+
             if (level == 1){
                 response = "CON please enter your email:";
-            } else if (level == 2){
+            } 
+            else if (level == 2){
                 response = "CON please enter your first name:";
-            } else if (level == 3){
+            } 
+            else if (level == 3){
                 response = 'CON Please enter your last name:';
-            } else if (level == 4){
+            } 
+            else if (level == 4){
                 response = 'CON Please enter your password:';
-            } else if (level == 5){
+            } 
+            else if (level == 5){
                 response = 'CON Please re-enter your password:';
-            } else if (level == 6 && (textArray[4] == textArray[5])){
+            } 
+            else if (level == 6 && (textArray[4] == textArray[5])){
                 response = `CON Please select your gender:
                 1. Male
                 2. Female`;
-            } else if (level == 6 && (textArray[4] != textArray[5])){
+            } 
+            else if (level == 6 && (textArray[4] != textArray[5])){
                 response = `CON Warning: Your passwords do not match! Please enter 
                 Please enter a new password`;
-            } else if (level == 7 && (textArray[4] == textArray[5])){
+            } 
+            else if (level == 7 && (textArray[4] == textArray[5])){
                 response = `CON Please select the type of account you would like to create:
                 1. Customer
                 2. Farmer`;
-            } else if (level == 7 && (textArray[4] != textArray[5])){
+            } 
+            else if (level == 7 && (textArray[4] != textArray[5])){
                 response = 'CON Please re-enter your password:';
-            } else if (level == 8 && (textArray[4] != textArray[5])){
+            } 
+            else if (level == 8 && (textArray[4] != textArray[5])){
                 response = `CON Please select your gender:
                 1, Male
                 2. Female`;
-            } else if (level == 8 && (textArray[4] == textArray[5])){
+            } 
+            else if (level == 8 && (textArray[4] == textArray[5])){
                 response = `END you have successfully registered your account!`;
                 registerUser(textArray);
-            } else if (level == 9 && (textArray[4] != textArray[5])){
+            } 
+            else if (level == 9 && (textArray[4] != textArray[5])){
                 response = `CON Please select the type of account you would like to create:
                 1. Customer
                 2. Farmer`;
-            } else if (level == 10 && (textArray[4] == textArray[5])){
+            } 
+            else if (level == 10 && (textArray[4] == textArray[5])){
                 response = `END you have successfully registered your account!`;
                 registerUser(textArray);
             }
-        } else if (textArray[0] == 2){
+        } 
+        
+        // Code to log user into the application if they already have an account:  
+        else if (textArray[0] == 2){
             if (level == 1){
                 response = "CON please enter your email:";
-            } else if (level == 2){
+            } 
+            else if (level == 2){
                 response = "CON please enter your password:";
-            } else if (level == 3){
+            } 
+            else if (level == 3){
                 registrationEmail = textArray[1];
                 registrationPassword = textArray[2];
 
                 response = loginUser(textArray);
                 
-            } else if (textArray[3] == 1){
-                // TODO: Menu to add a product
+            } 
+            else if (textArray[3] == 1){
+                // Menu to add a product
                 if (level == 4){
                     response = `CON Please enter the product title: `;
-                } else if (level == 5){
+                } 
+                else if (level == 5){
                     response = `CON Please enter the product price: `;
-                } else if (level == 6){
+                } 
+                else if (level == 6){
                     response = `CON Please enter the product description: `;
-                } else if (level == 7){
+                } 
+                else if (level == 7){
                     response = `CON Please enter the product specification:
                     e.g. Product weight, height etc `;
-                } else if (level == 8){
+                } 
+                else if (level == 8){
                     response = `CON Please enter the product location: `;
-                } else if (level == 9){
+                } 
+                else if (level == 9){
                     response = `CON Please enter the product quantity: `;
-                } else if (level == 10){
+                } 
+                else if (level == 10){
                     response = `CON Please enter the product category:
                     1. Animals
                     2. Eggs and Dairy
@@ -144,21 +179,27 @@ function appInit() {
                     4. Vegetables
                     5. Fruits
                     6. Other `;
-                } else if (level ==12){
+                } 
+                else if (level ==12){
                     createProduct(textArray);
                 }
-            } else if (level == 4 && textArray[3] == 2){
+            } 
+            else if (level == 4 && textArray[3] == 2){
                 // TODO: Menu to update a product
-                response = `CON Please select an item to delete: `
-            } else if (level == 4 && textArray[3] == 3){
-                // TODO: Menu to view products
-            } else if (level == 4 && textArray[3] == 4){
+                
+            } 
+            else if (level == 4 && textArray[3] == 3){
+                
+                response = `CON List of products`+ getProducts();
+            } 
+            else if (level == 4 && textArray[3] == 4){
                 // TODO: Menu to sign out
                 firebaseAuthentication.signOut(auth);
                 response = 'END You have successfully signed out!'
             }
-            // response = `END Your phone number is ${phoneNumber}`;
-        } else if (text == '3'){
+            
+        }
+        else if (text == '3'){
             response = `END Thank you for using our services!`;
         }       
     }
@@ -172,7 +213,7 @@ function appInit() {
 
 
 function loginUser(textArray){
-    // code to log user into his account
+    // code to log user into their account
     registrationEmail = textArray[1];
     registrationPassword = textArray[2];
 
@@ -184,22 +225,37 @@ function loginUser(textArray){
         console.log('Error', error);
     })
 
-    let loggedInUser = admin.auth().getUserByEmail(registrationEmail);
+    let userEmail = "";
+
+    let loggedInUser = admin.auth().getUserByEmail(registrationEmail).then((docref) =>{
+        console.log("User:", docref.email);
+        userEmail += docref.email;
+        return userEmail += docref.email;
+    });
     let response = '';
 
-    if (loggedInUser != null){
+    userEmail += loggedInUser;
+
+    if (userEmail != ""){
         response = `CON You have successfully signed in. Please select an option:
         1. Add product
         2. Delete a Product
         3. View My Products
         4. Sign Out`;
     } else {
-        response = `CON Error while signing you in!`;
+        response = `END Error while signing you in!`;
     }
 
     return response;
 
 }
+
+/**
+ * 
+ * @param {} textArray takes in all the information the user has entered in the registration menu
+ * 
+ * Function to process the information entered into the registration menu and save them into Firebase 
+ */
 
 function registerUser(textArray){
 
@@ -243,6 +299,8 @@ function registerUser(textArray){
         mobile: Number(''), 
         userType: registrationType
     };
+
+    
 
     admin.firestore().collection('users').add(data).then((docref) =>{
         console.log('Successfully registered user!!!', docref.id);
@@ -299,6 +357,8 @@ function createProduct(textArray){
     })
 }
 
+// TODO: Complete the functions below 
+
 function updateProduct(){
     
 }
@@ -309,6 +369,26 @@ function deleteAccount(){
 
 function deleteProduct(){
 
+}
+
+function getProducts(){
+    let products = [];
+    const productsRef = admin.firestore().collection('products').get().then(
+        doc =>{
+            doc.forEach(
+                product =>{
+                    console.log(product.data);
+                    return product.data();
+                }
+            )
+        }
+    ).catch(error =>{
+        console.log("Error", error);
+    });
+ 
+    
+
+    return String(productsRef);
 }
 
 
